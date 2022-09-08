@@ -11,7 +11,7 @@ from basicsr.utils.download_util import load_file_from_url
 from facelib.utils.face_restoration_helper import FaceRestoreHelper
 import torch.nn.functional as F
 from SwinIRHelper import SwinIR_LargeSR, SwinIR_MidSR
-from HATHelper import HAT_LargeSR
+from HATHelper import HAT_LargeSR, HAT_MidSR
 
 from basicsr.utils.registry import ARCH_REGISTRY
 

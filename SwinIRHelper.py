@@ -17,7 +17,7 @@ def SwinIR_MidSR(scale, tile):
     return SwinIRHelper(
         scale=scale,
         model=model,
-        model_path='https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x{scale}_GAN.pth',
+        model_path=f'https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFO_s64w8_SwinIR-M_x{scale}_GAN.pth',
         tile=tile
     )
 

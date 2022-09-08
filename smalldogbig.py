@@ -3,6 +3,7 @@ import os
 import cv2
 import argparse
 import glob
+import warnings
 import torch
 from torchvision.transforms.functional import normalize
 from basicsr.utils import imwrite, img2tensor, tensor2img
@@ -101,7 +102,6 @@ if __name__ == '__main__':
 
     if args.bg_upsampler:
         if not torch.cuda.is_available():  # CPU
-            import warnings
             warnings.warn(
                 'Currently we prevent using upsamplers if you don\'t have CUDA.'
                 'If you really want to use it, please modify the corresponding codes.',
@@ -118,6 +118,12 @@ if __name__ == '__main__':
             bg_upsampler = set_swinir()
         elif args.bg_upsampler == 'swinir_x2':
             bg_upsampler = set_swinir_x2()
+        elif args.bg_upsampler != "None" and args.bg_upsampler != "none":
+            warnings.warn(
+                f'Unknown upsampler {args.bg_upsampler} requested. Nothing will be used',
+                category=RuntimeWarning
+            )
+            
 
     # ------------------ set up face upsampler ------------------
     face_upsampler = None
@@ -237,7 +243,7 @@ if __name__ == '__main__':
         if not args.has_aligned and restored_img is not None:
             postfix=""
             if bg_upsampler is not None: postfix += "_bgsr_" + args.bg_upsampler
-            if face_upsampler is not None: postfix += "_facesr_" + (args.bg_upsampler if bg_upsampler is not None else "realesrgan")
+            if face_upsampler is not None: postfix += "_facesr_" + args.bg_upsampler
             if args.no_face_correction: postfix += "_nofaces"
 
             save_restore_path = os.path.join(result_root, f'{basename}{postfix}.png')

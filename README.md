@@ -25,7 +25,7 @@ Can be one of: None, swinir (default, x4), swinir_x2, realesrgan (x4), realesrga
 - realesrgan_anime is fastest, gives nice results on anime and illustrations, removes fine detail
 - realesrgan is middle
 - swinir is much slower, gives the most details
-- hat is supposed to be better than swinir, but in my testing isn't - probably depends on source
+- hat gives the best results on real photos, but is often worse than realesrgan or swinir on sythentic images
 - The x2 versions scale to x2 instead of x4 before processing. They're faster, but otherwise worse
 
 You can adjust face correction with --w {adjust} which is 0-1. 

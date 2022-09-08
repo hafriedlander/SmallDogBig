@@ -35,7 +35,10 @@ Use 0.7 - 0.9 for mostly good looking faces, or 0.2 for messed up faces.
 
 ### Examples
 
+Original, linear interpolated 4x for comparison
 ![Original, linear interpolated to 4x](/outputs/inputs/PrincessSummerFruit_nofaces.png?raw=true "Original, linear interpolated to 4x")
+
+SwinIR + Strong Face Correction
 ![SwinIR + Strong Face Correction](/outputs/inputs/PrincessSummerFruit_bgsr_swinir_facesr_swinir.png?raw=true "SwinIR + Strong Face Correction")
 
 ### Credits

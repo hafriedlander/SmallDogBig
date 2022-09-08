@@ -12,7 +12,6 @@ It _should_ be enough to put some input images into the `inputs` folder and then
 ```
 conda env create -f environment.yaml
 conda activate smalldogbig
-python basicsr/setup.py develop
 ```
 
 And then

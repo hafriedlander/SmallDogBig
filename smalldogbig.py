@@ -10,10 +10,13 @@ from basicsr.utils import imwrite, img2tensor, tensor2img
 from basicsr.utils.download_util import load_file_from_url
 from facelib.utils.face_restoration_helper import FaceRestoreHelper
 import torch.nn.functional as F
-from SwinIRHelper import SwinIR_LargeSR, SwinIR_MidSR
-from HATHelper import HAT_LargeSR, HAT_MidSR
+
+from scalers.RealESRGANHelper import RealESRGAN_x2, RealESRGAN_x4, RealESRGAN_Animex4
+from scalers.SwinIRHelper import SwinIR_LargeSR, SwinIR_MidSR
+from scalers.HATHelper import HAT_LargeSR, HAT_MidSR
 
 from basicsr.utils.registry import ARCH_REGISTRY
+import archs
 
 pretrain_model_url = {
     'restoration': 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth',
@@ -32,49 +35,13 @@ def set_hat_x2():
     return HAT_LargeSR(2, args.bg_tile)
 
 def set_realesrgan_x2():
-    from basicsr.archs.rrdbnet_arch import RRDBNet
-    from basicsr.utils.realesrgan_utils import RealESRGANer
-    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=2)
-    bg_upsampler = RealESRGANer(
-        scale=2,
-        model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.1/RealESRGAN_x2plus.pth',
-        model=model,
-        tile=args.bg_tile,
-        tile_pad=40,
-        pre_pad=0,
-        half=True)  # need to set False in CPU mode
-    
-    return bg_upsampler
+    return RealESRGAN_x2(args.bg_tile)
 
 def set_realesrgan_anime():
-    from basicsr.archs.rrdbnet_arch import RRDBNet
-    from basicsr.utils.realesrgan_utils import RealESRGANer
-    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=6, num_grow_ch=32, scale=4)
-    bg_upsampler = RealESRGANer(
-        scale=4,
-        model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth',
-        model=model,
-        tile=args.bg_tile,
-        tile_pad=40,
-        pre_pad=0,
-        half=True)  # need to set False in CPU mode
-    
-    return bg_upsampler
+    return RealESRGAN_Animex4(args.bg_tile)
 
 def set_realesrgan():
-    from basicsr.archs.rrdbnet_arch import RRDBNet
-    from basicsr.utils.realesrgan_utils import RealESRGANer
-    model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
-    bg_upsampler = RealESRGANer(
-        scale=4,
-        model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth',
-        model=model,
-        tile=args.bg_tile,
-        tile_pad=40,
-        pre_pad=0,
-        half=True)  # need to set False in CPU mode
-    
-    return bg_upsampler
+    return RealESRGAN_x4(args.bg_tile)
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

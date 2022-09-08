@@ -5,6 +5,7 @@ import os
 import queue
 import threading
 import torch
+from basicsr.archs.rrdbnet_arch import RRDBNet
 from basicsr.utils.download_util import load_file_from_url
 from torch.nn import functional as F
 

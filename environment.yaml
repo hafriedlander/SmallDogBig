@@ -12,6 +12,8 @@ dependencies:
   - scikit-image=0.19.2
   - tqdm=4.64.0
   - pip:
+    - basicsr=1.4.2
+    - einops=0.4.1
     - opencv-python==4.6.0.66
     - opencv-python-headless==4.6.0.66
     - timm==0.6.7

@@ -11,6 +11,7 @@ from basicsr.utils.download_util import load_file_from_url
 from facelib.utils.face_restoration_helper import FaceRestoreHelper
 import torch.nn.functional as F
 from SwinIRHelper import SwinIR_LargeSR, SwinIR_MidSR
+from HATHelper import HAT_LargeSR
 
 from basicsr.utils.registry import ARCH_REGISTRY
 
@@ -23,6 +24,12 @@ def set_swinir_x2():
 
 def set_swinir():
     return SwinIR_LargeSR(4, args.bg_tile)
+
+def set_hat():
+    return HAT_LargeSR(4, args.bg_tile)
+
+def set_hat_x2():
+    return HAT_LargeSR(2, args.bg_tile)
 
 def set_realesrgan_x2():
     from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -83,7 +90,7 @@ if __name__ == '__main__':
     # small det_model: 'YOLOv5n', 'retinaface_mobile0.25'
     parser.add_argument('--detection_model', type=str, default='retinaface_resnet50')
     parser.add_argument('--draw_box', action='store_true')
-    parser.add_argument('--bg_upsampler', type=str, default='swinir', help='Background upsampler. None, realesrgan, realesrgan_x2, realesrgan_anime, swinir, swinir_x2')
+    parser.add_argument('--bg_upsampler', type=str, default='swinir', help='Background upsampler. None, realesrgan, realesrgan_x2, realesrgan_anime, swinir, swinir_x2, hat, hat_x2')
     parser.add_argument('--no_face_upsample', action='store_true', help='Disable face upsampler after enhancement (if bg_upsampler is not None)')
     parser.add_argument('--bg_tile', type=int, default=400, help='Tile size for background sampler. Default: 400')
     parser.add_argument('--no_face_correction', action='store_true', help='Disable face correction (just do upscaling)')
@@ -118,6 +125,10 @@ if __name__ == '__main__':
             bg_upsampler = set_swinir()
         elif args.bg_upsampler == 'swinir_x2':
             bg_upsampler = set_swinir_x2()
+        elif args.bg_upsampler == 'hat':
+            bg_upsampler = set_hat()
+        elif args.bg_upsampler == 'hat_x2':
+            bg_upsampler = set_hat_x2()
         elif args.bg_upsampler != "None" and args.bg_upsampler != "none":
             warnings.warn(
                 f'Unknown upsampler {args.bg_upsampler} requested. Nothing will be used',

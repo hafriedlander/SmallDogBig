@@ -11,10 +11,6 @@ from basicsr.utils.download_util import load_file_from_url
 from facelib.utils.face_restoration_helper import FaceRestoreHelper
 import torch.nn.functional as F
 
-from scalers.RealESRGANHelper import RealESRGAN_x2, RealESRGAN_x4, RealESRGAN_Animex4
-from scalers.SwinIRHelper import SwinIR_LargeSR, SwinIR_MidSR
-from scalers.HATHelper import HAT_LargeSR, HAT_MidSR
-
 from basicsr.utils.registry import ARCH_REGISTRY
 import archs
 
@@ -22,26 +18,37 @@ pretrain_model_url = {
     'restoration': 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth',
 }
 
-def set_swinir_x2():
-    return SwinIR_MidSR(2, args.bg_tile)
-
 def set_swinir():
+    from scalers.SwinIRHelper import SwinIR_LargeSR
     return SwinIR_LargeSR(4, args.bg_tile)
 
+def set_swinir_x2():
+    from scalers.SwinIRHelper import SwinIR_MidSR
+    return SwinIR_MidSR(2, args.bg_tile)
+
 def set_hat():
+    from scalers.HATHelper import HAT_LargeSR
     return HAT_LargeSR(4, args.bg_tile)
 
 def set_hat_x2():
+    from scalers.HATHelper import HAT_LargeSR
     return HAT_LargeSR(2, args.bg_tile)
 
-def set_realesrgan_x2():
-    return RealESRGAN_x2(args.bg_tile)
+def set_realesrgan():
+    from scalers.RealESRGANHelper import RealESRGAN_x4
+    return RealESRGAN_x4(args.bg_tile)
 
 def set_realesrgan_anime():
+    from scalers.RealESRGANHelper import RealESRGAN_Animex4
     return RealESRGAN_Animex4(args.bg_tile)
 
-def set_realesrgan():
-    return RealESRGAN_x4(args.bg_tile)
+def set_realesrgan_x2():
+    from scalers.RealESRGANHelper import RealESRGAN_x2
+    return RealESRGAN_x2(args.bg_tile)
+
+def set_edt():
+    from scalers.EDTHelper import EDT_SR
+    return EDT_SR(4, args.bg_tile)
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -59,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--draw_box', action='store_true')
     parser.add_argument('--bg_upsampler', type=str, default='swinir', help='Background upsampler. None, realesrgan, realesrgan_x2, realesrgan_anime, swinir, swinir_x2, hat, hat_x2')
     parser.add_argument('--no_face_upsample', action='store_true', help='Disable face upsampler after enhancement (if bg_upsampler is not None)')
-    parser.add_argument('--bg_tile', type=int, default=400, help='Tile size for background sampler. Default: 400')
+    parser.add_argument('--bg_tile', type=int, default=384, help='Tile size for background sampler. Default: 384')
     parser.add_argument('--no_face_correction', action='store_true', help='Disable face correction (just do upscaling)')
     parser.add_argument('--save_intermediates', action='store_true', help='Also save just the detected faces, original and restored, for analysis')
 
@@ -96,6 +103,8 @@ if __name__ == '__main__':
             bg_upsampler = set_hat()
         elif args.bg_upsampler == 'hat_x2':
             bg_upsampler = set_hat_x2()
+        elif args.bg_upsampler == 'edt':
+            bg_upsampler = set_edt()
         elif args.bg_upsampler != "None" and args.bg_upsampler != "none":
             warnings.warn(
                 f'Unknown upsampler {args.bg_upsampler} requested. Nothing will be used',

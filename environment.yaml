@@ -27,3 +27,5 @@ dependencies:
     - lpips==0.1.4
     - gdown==4.5.1
     - easydict==1.9
+    - pynvml==11.4.1
+

@@ -1,10 +1,13 @@
 # Modified by Shangchen Zhou from: https://github.com/TencentARC/GFPGAN/blob/master/inference_gfpgan.py
 import os
+from time import time
 import cv2
 import argparse
 import glob
 import warnings
 import torch
+import pynvml
+
 from torchvision.transforms.functional import normalize
 from basicsr.utils import imwrite, img2tensor, tensor2img
 from basicsr.utils.download_util import load_file_from_url
@@ -13,6 +16,26 @@ import torch.nn.functional as F
 
 from basicsr.utils.registry import ARCH_REGISTRY
 import archs
+
+# Tile defaults for video memory in GB. Checked to fit HAT.
+# Needs to be a common multiple of all window sizes. Fortunatly, those are 8, 16 and 24, so lots to pick from
+bg_tile_defaults=(
+    (0, 192), # 6GB version is default
+    (7, 288),
+    (11, 384)
+)
+
+# Default to assuming 6GB VRAM
+vram_total_gb=0
+
+try:
+    pynvml.nvmlInit()
+    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    vram_total_gb = pynvml.nvmlDeviceGetMemoryInfo(handle).total / (1024 * 1024 * 1024)
+except:
+    print("Unable to determine available VRAM. Using small bg_tile. You may be able to use larger bg_tile values for higher speed.")
+
+*_, bg_tile_default=(x[1] for x in bg_tile_defaults if x[0] <= vram_total_gb)
 
 pretrain_model_url = {
     'restoration': 'https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth',
@@ -66,7 +89,7 @@ if __name__ == '__main__':
     parser.add_argument('--draw_box', action='store_true')
     parser.add_argument('--bg_upsampler', type=str, default='swinir', help='Background upsampler. None, realesrgan, realesrgan_x2, realesrgan_anime, swinir, swinir_x2, hat, hat_x2')
     parser.add_argument('--no_face_upsample', action='store_true', help='Disable face upsampler after enhancement (if bg_upsampler is not None)')
-    parser.add_argument('--bg_tile', type=int, default=384, help='Tile size for background sampler. Default: 384')
+    parser.add_argument('--bg_tile', type=int, default=bg_tile_default, help=f'Tile size for background sampler. Default: {bg_tile_default}')
     parser.add_argument('--no_face_correction', action='store_true', help='Disable face correction (just do upscaling)')
     parser.add_argument('--save_intermediates', action='store_true', help='Also save just the detected faces, original and restored, for analysis')
 
@@ -110,7 +133,6 @@ if __name__ == '__main__':
                 f'Unknown upsampler {args.bg_upsampler} requested. Nothing will be used',
                 category=RuntimeWarning
             )
-            
 
     # ------------------ set up face upsampler ------------------
     face_upsampler = None

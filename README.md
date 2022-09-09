@@ -29,9 +29,12 @@ Can be one of: None, swinir (default, x4), swinir_x2, realesrgan (x4), realesrga
 - edt is an alternative to hat
 - The x2 versions scale to x2 instead of x4 before processing. They're faster, but otherwise worse
 
+You will need at least 6GB of VRAM for HAT. The other upscalers should work in 4GB.
+
 You can adjust face correction with --w {adjust} which is 0-1. 
 - 0 gives more correction at the expense of accuracy
 - 1 tries to be more accurate at the expense of correction.
+
 Use 0.7 - 0.9 for mostly good looking faces, or 0.2 for messed up faces.
 
 ### Weights
@@ -70,3 +73,4 @@ Component licenses:
 - HAT: MIT
 - EDT: None listed
 
+City.png example image is derived (a scaled-down crop) from https://unsplash.com/photos/wpU4veNGnHg

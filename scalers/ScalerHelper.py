@@ -11,8 +11,8 @@ class ScalerHelper():
         scale (int): Upsampling scale factor used in the networks. It is usually 2 or 4.
         model_path (str): The path to the pretrained model. It can be urls (will first download it automatically).
         model (nn.Module): The defined network. Default: None.
-        tile (int): The total size including overlap of a tile. 0 means don't tile. Default: 0
-        tile_overlap (float): How much each tile should overlap it's neighbour tiles (and be discarded after processing). Default 0.25.
+        tile (int): The size _excluding_ overlap of a tile. 0 means don't tile. Default: 0
+        tile_overlap (float): How much additional (as a % of tile size) should be added as overlap of it's neighbour tiles (and be discarded after processing). Default 0.5.
         pre_pad (int): Pad the input images to avoid border artifacts. Default: 10.
         window_size (int): The window size of the model
     """
@@ -22,9 +22,9 @@ class ScalerHelper():
                  model_path,
                  model,
                  tile=0,
-                 tile_overlap=0.25,
+                 tile_overlap=0.5,
                  pre_pad=32,
-                 window_size=0,
+                 window_size=1,
                  device=None
                 ):
 
@@ -33,6 +33,13 @@ class ScalerHelper():
         self.tile_overlap = math.ceil(tile*tile_overlap)
         self.pre_pad = pre_pad
         self.window_size = window_size
+
+        # If tile isn't a multiple of window size, complain
+        if self.tile != 0 and self.tile % self.window_size != 0:
+            raise ArgumentError(f'{self.tile} needs to be a multipe of {self.window_size}')
+
+        # If tile_overlap isn't a multiple of window size, don't complain, just increase it so it is
+        self.tile_overlap=math.ceil(self.tile_overlap / self.window_size) * self.window_size
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
 
@@ -56,8 +63,8 @@ class ScalerHelper():
         output_width = width * self.scale
         output_shape = (batch, channel, output_height, output_width)
 
+        stride=self.tile
         pad=self.tile_overlap
-        stride=self.tile-pad*2
 
         # start with black image
         output = img.new_zeros(output_shape)
@@ -118,10 +125,6 @@ class ScalerHelper():
         This function will run the actual upsample, either in one pass, or tiled, based on self.tile
         """
 
-        if self.tile == 0:
-            return self.process(img)
-        else:
-            return self.tile_process(img)
 
     @torch.no_grad()
     def pad_and_upsample(self, img):
@@ -130,11 +133,20 @@ class ScalerHelper():
         This function will pad the image to be a multiple, run the upsample, and then strip the pad back off
         """
 
-        # pad input image to be a multiple of window_size, but with a minimum pad of pre_pad
-
+        # Get size
         _, _, h_old, w_old = img.size()
-        h_pad = math.ceil((h_old+self.pre_pad*2) / self.window_size) * self.window_size - h_old
-        w_pad = math.ceil((w_old+self.pre_pad*2) / self.window_size) * self.window_size - w_old
+
+        # Tile if self.tile is set, unless both dimensions are less than tile size
+        tile_mode = self.tile != 0 and (h_old > self.tile or w_old > self.tile)
+
+        if tile_mode:
+            # Otherwise pad minimum of pre_pad, plus enough to make sure size is multiple of tile size (which is also a multiple of window size)
+            h_pad = math.ceil((h_old+self.pre_pad*2) / self.tile) * self.tile - h_old
+            w_pad = math.ceil((w_old+self.pre_pad*2) / self.tile) * self.tile - h_old
+        else:
+            # If we're not tiling, pad a minimum of pre_pad on each side, plus enough extra to make sure total size is multiple of window size
+            h_pad = math.ceil((h_old+self.pre_pad*2) / self.window_size) * self.window_size - h_old
+            w_pad = math.ceil((w_old+self.pre_pad*2) / self.window_size) * self.window_size - w_old
 
         l_pad=w_pad//2
         r_pad=w_pad-l_pad
@@ -143,8 +155,13 @@ class ScalerHelper():
 
         # Add padding
         img = F.pad(img, (l_pad, r_pad, t_pad, b_pad), 'reflect')
+
         # Upsample
-        output_img_t = self.upsample(img)
+        if tile_mode:
+            output_img_t = self.tile_process(img)
+        else:
+            output_img_t = self.process(img)
+            
         # Remove padding
         output_img_t = output_img_t[..., l_pad*self.scale:(l_pad+h_old) * self.scale, t_pad*self.scale:(t_pad+w_old) * self.scale]
 

@@ -26,10 +26,10 @@ Can be one of: None, swinir (default, x4), swinir_x2, realesrgan (x4), realesrga
 - realesrgan is middle
 - swinir is much slower, gives the most details
 - hat gives the best results on real photos, but is often worse than realesrgan or swinir on synthetic images
-- edt is an alternative to hat
+- edt is an alternative to hat - very similar (although not quite as good) on real photos, but much faster
 - The x2 versions scale to x2 instead of x4 before processing. They're faster, but otherwise worse
 
-You will need at least 6GB of VRAM for HAT. The other upscalers should work in 4GB.
+You will need at least 6GB of VRAM most upscalers. You can try setting a smaller bg_tile for 4GB.
 
 You can adjust face correction with --w {adjust} which is 0-1. 
 - 0 gives more correction at the expense of accuracy

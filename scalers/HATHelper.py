@@ -99,7 +99,7 @@ class HATHelper(ScalerHelper):
                  model_path,
                  model,
                  tile=0,
-                 tile_overlap=0.25,
+                 tile_overlap=0.5,
                  pre_pad=32,
                  device=None
                 ):

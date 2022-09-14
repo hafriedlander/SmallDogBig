@@ -142,7 +142,7 @@ class ScalerHelper():
         if tile_mode:
             # Otherwise pad minimum of pre_pad, plus enough to make sure size is multiple of tile size (which is also a multiple of window size)
             h_pad = math.ceil((h_old+self.pre_pad*2) / self.tile) * self.tile - h_old
-            w_pad = math.ceil((w_old+self.pre_pad*2) / self.tile) * self.tile - h_old
+            w_pad = math.ceil((w_old+self.pre_pad*2) / self.tile) * self.tile - w_old
         else:
             # If we're not tiling, pad a minimum of pre_pad on each side, plus enough extra to make sure total size is multiple of window size
             h_pad = math.ceil((h_old+self.pre_pad*2) / self.window_size) * self.window_size - h_old
@@ -163,7 +163,7 @@ class ScalerHelper():
             output_img_t = self.process(img)
             
         # Remove padding
-        output_img_t = output_img_t[..., l_pad*self.scale:(l_pad+h_old) * self.scale, t_pad*self.scale:(t_pad+w_old) * self.scale]
+        output_img_t = output_img_t[..., t_pad*self.scale:(t_pad+h_old) * self.scale, l_pad*self.scale:(l_pad+w_old) * self.scale]
 
         # Convert back from tensor to cv2 Numpy image
         output_img = output_img_t.data.squeeze().float().cpu().clamp_(0, 1).numpy()
